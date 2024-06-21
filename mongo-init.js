@@ -6,17 +6,14 @@ db.getSiblingDB('admin').auth(
 db.createUser({
   user: process.env.MONGO_USER,
   pwd: process.env.MONGO_PASSWORD,
-  roles: [
-    { role: 'readWrite', db: 'msisdn' },
-    { role: 'readWrite', db: 'orgusers' },
-  ],
+  roles: [{ role: 'readWrite', db: 'msisdnDB' }],
 });
 
 db.createCollection('msisdn', {
   validator: {
     $jsonSchema: {
       bsonType: 'object',
-      title: 'User Object Validation',
+      title: 'Msisdn Object Validation',
       required: ['msisdn', 'assigned'],
       properties: {
         msisdn: {
@@ -32,7 +29,23 @@ db.createCollection('msisdn', {
   },
 });
 
-db.createCollection('orgusers', {
+db.createCollection('organisation', {
+  validator: {
+    $jsonSchema: {
+      bsonType: 'object',
+      title: 'Organisation Object Validation',
+      required: ['name'],
+      properties: {
+        userid: {
+          bsonType: 'string',
+          description: "'name' must be a string and is required",
+        },
+      },
+    },
+  },
+});
+
+db.createCollection('user', {
   validator: {
     $jsonSchema: {
       bsonType: 'object',
@@ -44,12 +57,13 @@ db.createCollection('orgusers', {
           description: "'name' must be a string and is required",
         },
         organisation: {
-          bsonType: 'string',
-          description: "'organisation' must be a string and is required",
+          bsonType: 'objectId',
+          description:
+            "'organisation' must be a objectId reference and is required",
         },
         msisdn: {
           bsonType: 'objectId',
-          description: "'msisdn' must be a string and is required",
+          description: "'msisdn' must be a objectId reference and is required",
         },
       },
     },
