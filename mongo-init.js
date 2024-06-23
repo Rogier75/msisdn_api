@@ -9,7 +9,7 @@ db.createUser({
   roles: [{ role: 'readWrite', db: 'msisdnDB' }],
 });
 
-db.createCollection('msisdn', {
+db.createCollection('msisdns', {
   validator: {
     $jsonSchema: {
       bsonType: 'object',
@@ -29,7 +29,7 @@ db.createCollection('msisdn', {
   },
 });
 
-db.createCollection('organisation', {
+db.createCollection('organisations', {
   validator: {
     $jsonSchema: {
       bsonType: 'object',
@@ -45,32 +45,40 @@ db.createCollection('organisation', {
   },
 });
 
-db.createCollection('user', {
+db.createCollection('users', {
   validator: {
     $jsonSchema: {
       bsonType: 'object',
       title: 'User Object Validation',
-      required: ['userid', 'organisation', 'msisdn'],
+      required: ['personId', 'name', 'surname', 'organisation', 'msisdn'],
       properties: {
-        userid: {
+        personId: {
           bsonType: 'string',
           description: "'name' must be a string and is required",
+        },
+        name: {
+          bsonType: 'string',
+          description: "'name' must be a string and is required",
+        },
+        surname: {
+          bsonType: 'string',
+          description: "'surname' must be a string and is required",
         },
         organisation: {
           bsonType: 'objectId',
           description:
-            "'organisation' must be a objectId reference and is required",
+            "'organisation' must be an objectId reference and is required",
         },
         msisdn: {
           bsonType: 'objectId',
-          description: "'msisdn' must be a objectId reference and is required",
+          description: "'msisdn' must be an objectId reference and is required",
         },
       },
     },
   },
 });
 
-db.msisdn.insertMany([
+db.msisdns.insertMany([
   { msisdn: '346900001', assigned: false },
   { msisdn: '346900002', assigned: false },
   { msisdn: '346900003', assigned: false },
