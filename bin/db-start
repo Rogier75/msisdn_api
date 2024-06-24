@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#
+# Start db containers
+
+docker compose \
+    -f docker-compose-infrastructure.yml \
+    up --build -d

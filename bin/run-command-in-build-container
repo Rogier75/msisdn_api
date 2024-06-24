@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-#
-# Runs commands in container.
-
-# Run command under current user
-docker compose -p rogier run --rm msisdn_api-build "$@"

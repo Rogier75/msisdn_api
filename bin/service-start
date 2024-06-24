@@ -7,9 +7,7 @@ docker compose \
     -p rogier \
     up --build -d
 
-bin/npm install
-bin/tsc
-
 docker compose \
+    -f docker-compose.yml \
     -p rogier \
     up --build
