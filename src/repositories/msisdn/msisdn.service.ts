@@ -106,10 +106,16 @@ export class MsisdnService {
 
     this.logger.debug('found msisdn:', msisdnOid);
 
+    /////////////////////////
+    // Remove from msisdn  //
+    /////////////////////////
     if (msisdnOid) {
       await msisdnOid.updateOne({ $unset: { user: '' } });
     }
 
+    /////////////////////////
+    // Delete user object  //
+    /////////////////////////
     await userOid.deleteOne();
 
     //TODO maybe delete the organisation object if no more users
@@ -134,8 +140,9 @@ export class MsisdnService {
 
     const msisdnOids = await this.msisdnModel.find({ user: { $in: userOids } });
 
-    //This list contains the ID/passport, the name and the surname of the user,
-    //and the corresponding number
+    /////////////////////////
+    // Map user msisdn     //
+    /////////////////////////
     return msisdnOids.map(function (model) {
       const user = userOids.find((userOid) =>
         userOid._id.equals(model.user._id),

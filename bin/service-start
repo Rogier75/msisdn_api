@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Start project containers.
+
+docker compose \
+    -f docker-compose-infrastructure.yml \
+    -p rogier \
+    up --build -d
+
+bin/npm install
+bin/tsc
+
+docker compose \
+    -p rogier \
+    up --build

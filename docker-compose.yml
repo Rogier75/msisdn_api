@@ -1,11 +1,22 @@
 services:
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    env_file: [.env-mongo, .env]
-    restart: always
+  msisdn_api:
+    image: rogier/msisdn_api:build
+    container_name: msisdn_api-build
+    build:
+      args:
+        SERVICE_NAME: msisdn_api
+    environment:
+      ENV: 'dev'
+      NODE_ENV: 'dev'
     ports:
-      - 27017:27017
+      - 3000:3000
+    command: npm run start:dev
     volumes:
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - .:/var/service/
+      - ./node_modules:/var/service/node_modules:cached
 
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: 127.0.0.1

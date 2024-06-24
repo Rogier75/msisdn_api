@@ -19,14 +19,14 @@ export class WebserverController {
   constructor(private readonly webService: WebserverService) {}
 
   @Get('msisdn/available')
-  async getAllAvailableMsisdns(): Promise<NonNullable<unknown>> {
+  async getAllAvailableMsisdns(): Promise<SuccessResponse> {
     return await this.webService.getAllAvailableMsisdns();
   }
 
   @Get('msisdn/organisation/:organisationId')
   async getOrganisationMsisdns(
     @Param('organisationId') organisationId: string,
-  ): Promise<NonNullable<unknown>> {
+  ): Promise<SuccessResponse> {
     return await this.webService.getOrganisationMsisdns(organisationId);
   }
 
