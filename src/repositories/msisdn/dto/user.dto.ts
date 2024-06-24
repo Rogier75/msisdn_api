@@ -1,4 +1,4 @@
-export interface AllocateMsisdn {
+export interface UserDto {
   readonly personId: string;
   readonly name: string;
   readonly surname: string;

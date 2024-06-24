@@ -7,8 +7,7 @@ import { Organisation } from './schema/organisation.schema';
 import MsisdnInUseException from './exception/msisdn-in-use.exception';
 import UserMsisdnAlreadyAllocatedException from './exception/user-msisdn-already-allocated.exception';
 import MsisdnNotFoundException from './exception/msisdn-not-found.exception';
-import { AllocateMsisdn } from './interface/allocate-msisdn';
-import { DeAllocateMsisdn } from './interface/de-allocate-msisdn';
+import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class MsisdnService {
@@ -21,55 +20,56 @@ export class MsisdnService {
     private organisationModel: Model<Organisation>,
   ) {}
 
-  async assignMsisdnToUser(allocateMsisdn: AllocateMsisdn) {
+  async allocateMsisdn(model: UserDto): Promise<void> {
     const msisdnOid = await this.msisdnModel
-      .findOne({ msisdn: allocateMsisdn.msisdn })
+      .findOne({ msisdn: model.msisdn })
       .exec();
 
+    this.logger.debug('found msisdn:', msisdnOid);
+
     if (!msisdnOid) {
-      throw new MsisdnNotFoundException(allocateMsisdn.msisdn);
+      throw new MsisdnNotFoundException(model.msisdn);
     }
 
     let userOid = await this.userModel
-      .findOne({ personId: allocateMsisdn.personId })
+      .findOne({ personId: model.personId })
       .exec();
 
-    this.logger.log('found msisdn:', msisdnOid);
-    this.logger.log('found user:', userOid);
+    this.logger.debug('found user:', userOid);
 
     if (userOid) {
-      if (userOid.msisdn._id.equals(msisdnOid._id)) {
+      if (msisdnOid.user?._id.equals(userOid._id)) {
         // Already exist with this user. No error
         return;
       } else {
-        throw new UserMsisdnAlreadyAllocatedException(allocateMsisdn.personId);
+        throw new UserMsisdnAlreadyAllocatedException(model.personId);
       }
-    } else if (msisdnOid.assigned) {
-      throw new MsisdnInUseException(allocateMsisdn.msisdn);
+    } else if (msisdnOid.user) {
+      throw new MsisdnInUseException(model.msisdn);
     }
 
     let organisationOid = await this.organisationModel
       .findOne({
-        name: allocateMsisdn.organisation,
+        name: model.organisation,
       })
       .exec();
-    this.logger.log('found organisation:', organisationOid);
+    this.logger.debug('found organisation:', organisationOid);
 
     /////////////////////////
     // Create Organisation //
     /////////////////////////
     if (!organisationOid) {
       const createdOrganisation = new this.organisationModel({
-        name: allocateMsisdn.organisation,
+        name: model.organisation,
       });
       organisationOid = await createdOrganisation.save();
       this.logger.log('created organisation', organisationOid);
     }
 
-    console.log('going to create user:', {
-      personId: allocateMsisdn.personId,
-      name: allocateMsisdn.name,
-      surname: allocateMsisdn.surname,
+    console.debug('going to create user:', {
+      personId: model.personId,
+      name: model.name,
+      surname: model.surname,
       msisdn: msisdnOid,
       organisation: organisationOid,
     });
@@ -78,38 +78,83 @@ export class MsisdnService {
     // Create User         //
     /////////////////////////
     const createdUser = new this.userModel({
-      personId: allocateMsisdn.personId,
-      name: allocateMsisdn.name,
-      surname: allocateMsisdn.surname,
-      msisdn: msisdnOid,
+      personId: model.personId,
+      name: model.name,
+      surname: model.surname,
       organisation: organisationOid,
     });
     userOid = await createdUser.save();
-    this.logger.log('created user', userOid);
+    this.logger.debug('created user:', userOid);
 
-    //////////////////////////
-    // Update msisdn status //
-    //////////////////////////
-    msisdnOid.assigned = true;
-    await msisdnOid.save();
+    /////////////////////////
+    // Update msisdn user  //
+    /////////////////////////
+    await msisdnOid.updateOne({ $set: { user: userOid } });
   }
 
-  async deAssignMsisdn(deAllocateMsisdn: DeAllocateMsisdn) {
-    return;
+  async deAllocateMsisdn(personId: string): Promise<void> {
+    const userOid = await this.userModel.findOne({ personId: personId }).exec();
+
+    this.logger.debug('found user:', userOid);
+
+    if (!userOid) {
+      // Already gone. No error
+      return;
+    }
+
+    const msisdnOid = await this.msisdnModel.findOne({ user: userOid }).exec();
+
+    this.logger.debug('found msisdn:', msisdnOid);
+
+    if (msisdnOid) {
+      await msisdnOid.updateOne({ $unset: { user: '' } });
+    }
+
+    await userOid.deleteOne();
+
+    //TODO maybe delete the organisation object if no more users
   }
 
-  async getAllAvailableMsisdns() {
-    const models: Msisdn[] = await this.msisdnModel
-      .find({ assigned: false })
+  async getOrganisationMsisdns(organisationId: string): Promise<UserDto[]> {
+    const organisationOid = await this.organisationModel
+      .findOne({ name: organisationId })
       .exec();
-    return models.map((model) => model.msisdn);
+    this.logger.debug('found organisation:', organisationOid);
+    if (!organisationOid) {
+      return [];
+    }
+
+    const userOids = await this.userModel
+      .find({ organisation: organisationOid })
+      .exec();
+    this.logger.debug('found userOids:', userOids);
+    if (!userOids.length) {
+      return [];
+    }
+
+    const msisdnOids = await this.msisdnModel.find({ user: { $in: userOids } });
+
+    //This list contains the ID/passport, the name and the surname of the user,
+    //and the corresponding number
+    return msisdnOids.map(function (model) {
+      const user = userOids.find((userOid) =>
+        userOid._id.equals(model.user._id),
+      );
+      return {
+        personId: user.personId,
+        name: user.name,
+        surname: user.surname,
+        msisdn: model.msisdn,
+        organisation: organisationOid.name,
+      };
+    });
   }
-  // async create(createMsisdnDto: CreateMsisdnDto): Promise<Msisdn> {
-  //   const createdMsisdn = new this.MsisdnModel(createMsisdnDto);
-  //   return createdMsisdn.save();
-  // }
-  //
-  // async findAll(): Promise<Msisdn[]> {
-  //   return this.MsisdnModel.find().exec();
-  // }
+
+  async getAllAvailableMsisdns(): Promise<string[]> {
+    const msisdnOids: Msisdn[] = await this.msisdnModel
+      .find({ user: { $exists: false } })
+      .exec();
+    this.logger.debug('found msisdnOids:', msisdnOids);
+    return msisdnOids.map((model) => model.msisdn);
+  }
 }

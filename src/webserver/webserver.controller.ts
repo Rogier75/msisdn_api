@@ -3,7 +3,7 @@ import {
   Controller,
   Delete,
   Get,
-  HttpStatus,
+  Param,
   Post,
   UseFilters,
 } from '@nestjs/common';
@@ -18,17 +18,16 @@ import { SuccessResponse } from './success-response';
 export class WebserverController {
   constructor(private readonly webService: WebserverService) {}
 
-  @Get()
+  @Get('msisdn/available')
   async getAllAvailableMsisdns(): Promise<NonNullable<unknown>> {
-    const result = this.webService.getAllAvailableMsisdns();
+    return await this.webService.getAllAvailableMsisdns();
+  }
 
-    const success = {
-      status: HttpStatus.OK,
-      result: result,
-      error: false,
-    };
-
-    return success;
+  @Get('msisdn/organisation/:organisationId')
+  async getOrganisationMsisdns(
+    @Param('organisationId') organisationId: string,
+  ): Promise<NonNullable<unknown>> {
+    return await this.webService.getOrganisationMsisdns(organisationId);
   }
 
   @Delete('msisdn')

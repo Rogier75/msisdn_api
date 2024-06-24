@@ -1,6 +1,11 @@
-export type SuccessResponse = {
-  status: string;
-  result: any | undefined;
-  error: boolean;
-  error_message?: string;
-};
+export class SuccessResponse {
+  public readonly error: boolean = false;
+
+  public readonly statusCode: number = 200;
+
+  public readonly result: any | undefined;
+
+  constructor(result: any | undefined) {
+    this.result = result;
+  }
+}

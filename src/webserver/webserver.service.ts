@@ -1,9 +1,10 @@
-import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MsisdnService } from '../repositories/msisdn/msisdn.service';
-import { AllocateMsisdn } from '../repositories/msisdn/interface/allocate-msisdn';
-import { DeAllocateMsisdn } from '../repositories/msisdn/interface/de-allocate-msisdn';
 import { SuccessResponse } from './success-response';
 import MsisdnServiceException from '../repositories/msisdn/exception/msisdn-service.exception';
+import ServiceConflictException from './exception/service-conflict.exception';
+import { AllocateMsisdnDto } from './dto/allocate-msisdn.dto';
+import { DeAllocateMsisdnDto } from './dto/de-allocate-msisdn.dto';
 
 @Injectable()
 export class WebserverService {
@@ -11,48 +12,54 @@ export class WebserverService {
 
   public constructor(private readonly msisdnService: MsisdnService) {}
 
-  async getAllAvailableMsisdns(): Promise<string[]> {
-    return this.msisdnService.getAllAvailableMsisdns();
-  }
-
-  async allocateMsisdn(model: AllocateMsisdn): Promise<SuccessResponse> {
+  async getAllAvailableMsisdns(): Promise<SuccessResponse> {
     try {
-      const result = await this.msisdnService.assignMsisdnToUser(model);
-      return this.wrapResult(result);
+      const result = await this.msisdnService.getAllAvailableMsisdns();
+      return new SuccessResponse(result);
     } catch (error) {
       if (error instanceof MsisdnServiceException) {
-        return this.wrapServiceException(error);
+        throw new ServiceConflictException(error.errorCode, error.message);
       }
       throw error;
     }
   }
 
-  async deAllocateMsisdn(model: DeAllocateMsisdn): Promise<SuccessResponse> {
+  async getOrganisationMsisdns(
+    organisationId: string,
+  ): Promise<SuccessResponse> {
     try {
-      const result = await this.msisdnService.deAssignMsisdn(model);
-      return this.wrapResult(result);
+      const result =
+        await this.msisdnService.getOrganisationMsisdns(organisationId);
+      return new SuccessResponse(result);
     } catch (error) {
       if (error instanceof MsisdnServiceException) {
-        return this.wrapServiceException(error);
+        throw new ServiceConflictException(error.errorCode, error.message);
       }
       throw error;
     }
   }
 
-  private wrapResult(result: any): SuccessResponse {
-    return {
-      status: 'OK',
-      error: false,
-      result: result,
-    };
+  async allocateMsisdn(model: AllocateMsisdnDto): Promise<SuccessResponse> {
+    try {
+      const result = await this.msisdnService.allocateMsisdn(model);
+      return new SuccessResponse(result);
+    } catch (error) {
+      if (error instanceof MsisdnServiceException) {
+        throw new ServiceConflictException(error.errorCode, error.message);
+      }
+      throw error;
+    }
   }
 
-  private wrapServiceException(error: MsisdnServiceException): SuccessResponse {
-    return {
-      status: 'INVALID_REQUEST', //TODO get the status from the exception object
-      error: true,
-      error_message: error.message,
-      result: null,
-    };
+  async deAllocateMsisdn(model: DeAllocateMsisdnDto): Promise<SuccessResponse> {
+    try {
+      const result = await this.msisdnService.deAllocateMsisdn(model.personId);
+      return new SuccessResponse(result);
+    } catch (error) {
+      if (error instanceof MsisdnServiceException) {
+        throw new ServiceConflictException(error.errorCode, error.message);
+      }
+      throw error;
+    }
   }
 }

@@ -14,15 +14,15 @@ db.createCollection('msisdns', {
     $jsonSchema: {
       bsonType: 'object',
       title: 'Msisdn Object Validation',
-      required: ['msisdn', 'assigned'],
+      required: ['msisdn'],
       properties: {
         msisdn: {
           bsonType: 'string',
           description: "'msisdn' must be a string and is required",
         },
-        assigned: {
-          bsonType: 'bool',
-          description: "'assigned' must be a boolean and is required",
+        user: {
+          bsonType: 'objectId',
+          description: "'user' must be an objectId reference",
         },
       },
     },
@@ -50,7 +50,7 @@ db.createCollection('users', {
     $jsonSchema: {
       bsonType: 'object',
       title: 'User Object Validation',
-      required: ['personId', 'name', 'surname', 'organisation', 'msisdn'],
+      required: ['personId', 'name', 'surname', 'organisation'],
       properties: {
         personId: {
           bsonType: 'string',
@@ -69,34 +69,30 @@ db.createCollection('users', {
           description:
             "'organisation' must be an objectId reference and is required",
         },
-        msisdn: {
-          bsonType: 'objectId',
-          description: "'msisdn' must be an objectId reference and is required",
-        },
       },
     },
   },
 });
 
 db.msisdns.insertMany([
-  { msisdn: '346900001', assigned: false },
-  { msisdn: '346900002', assigned: false },
-  { msisdn: '346900003', assigned: false },
-  { msisdn: '346900004', assigned: false },
-  { msisdn: '346900005', assigned: false },
-  { msisdn: '346900006', assigned: false },
-  { msisdn: '346900007', assigned: false },
-  { msisdn: '346900008', assigned: false },
-  { msisdn: '346900009', assigned: false },
-  { msisdn: '346900010', assigned: false },
-  { msisdn: '346900011', assigned: false },
-  { msisdn: '346900012', assigned: false },
-  { msisdn: '346900013', assigned: false },
-  { msisdn: '346900014', assigned: false },
-  { msisdn: '346900015', assigned: false },
-  { msisdn: '346900016', assigned: false },
-  { msisdn: '346900017', assigned: false },
-  { msisdn: '346900018', assigned: false },
-  { msisdn: '346900019', assigned: false },
-  { msisdn: '346900020', assigned: false },
+  { msisdn: '346900001' },
+  { msisdn: '346900002' },
+  { msisdn: '346900003' },
+  { msisdn: '346900004' },
+  { msisdn: '346900005' },
+  { msisdn: '346900006' },
+  { msisdn: '346900007' },
+  { msisdn: '346900008' },
+  { msisdn: '346900009' },
+  { msisdn: '346900010' },
+  { msisdn: '346900011' },
+  { msisdn: '346900012' },
+  { msisdn: '346900013' },
+  { msisdn: '346900014' },
+  { msisdn: '346900015' },
+  { msisdn: '346900016' },
+  { msisdn: '346900017' },
+  { msisdn: '346900018' },
+  { msisdn: '346900019' },
+  { msisdn: '346900020' },
 ]);
