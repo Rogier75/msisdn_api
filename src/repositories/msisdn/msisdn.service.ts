@@ -66,7 +66,7 @@ export class MsisdnService {
       this.logger.log('created organisation', organisationOid);
     }
 
-    console.debug('going to create user:', {
+    this.logger.debug('going to create user:', {
       personId: model.personId,
       name: model.name,
       surname: model.surname,
@@ -143,18 +143,21 @@ export class MsisdnService {
     /////////////////////////
     // Map user msisdn     //
     /////////////////////////
-    return msisdnOids.map(function (model) {
-      const user = userOids.find((userOid) =>
-        userOid._id.equals(model.user._id),
-      );
-      return {
-        personId: user.personId,
-        name: user.name,
-        surname: user.surname,
-        msisdn: model.msisdn,
-        organisation: organisationOid.name,
-      };
-    });
+    return msisdnOids
+      .map(function (model) {
+        const user = userOids.find((userOid) =>
+          userOid._id.equals(model.user._id),
+        );
+        return {
+          personId: user.personId,
+          name: user.name,
+          surname: user.surname,
+          msisdn: model.msisdn,
+          organisation: organisationOid.name,
+        };
+        //sort them to always get a consistent response
+      })
+      .sort((a, b) => a.msisdn.localeCompare(b.msisdn));
   }
 
   async getAllAvailableMsisdns(): Promise<string[]> {
@@ -162,6 +165,7 @@ export class MsisdnService {
       .find({ user: { $exists: false } })
       .exec();
     this.logger.debug('found msisdnOids:', msisdnOids);
-    return msisdnOids.map((model) => model.msisdn);
+    //sort them to always get a consistent response
+    return msisdnOids.map((model) => model.msisdn).sort();
   }
 }

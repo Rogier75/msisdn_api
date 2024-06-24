@@ -2,11 +2,11 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, HttpCode,
   Param,
   Post,
-  UseFilters,
-} from '@nestjs/common';
+  UseFilters
+} from "@nestjs/common";
 import { WebserverService } from './webserver.service';
 import { HttpExceptionFilter } from './http-exception.filter';
 import { AllocateMsisdnDto } from './dto/allocate-msisdn.dto';
@@ -38,6 +38,7 @@ export class WebserverController {
   }
 
   @Post('msisdn')
+  @HttpCode(200)
   async allocateMsisdn(
     @Body() body: AllocateMsisdnDto,
   ): Promise<SuccessResponse> {
