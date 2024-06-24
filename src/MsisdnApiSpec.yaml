@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: Title
+  description: Title
+  version: 1.0.0
+servers:
+  - url: 'http'
+paths:
+  /msisdn:
+    get:
+      description: Get a list of available msisdns
+      responses:
+        200:
+          description: a list of msisdns
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: The user ID.
+                  username:
+                    type: string
+                    description: The user name.
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 4
+        name:
+          type: string
+          example: Arthur Dent
+      # Both properties are required
+      required:
+        - id
+        - name
