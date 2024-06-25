@@ -34,7 +34,7 @@ async function cleanDatabase() {
   await Msisdn.updateMany({ user: { $ne: null } }, { $unset: { user: '' } });
 }
 
-describe('WebserverController (e2e)', () => {
+describe('WebserverController (e2e) happy test', () => {
   let app: INestApplication;
 
   async function insertTestUsers() {
@@ -89,9 +89,9 @@ describe('WebserverController (e2e)', () => {
   it('Users can be fetched by Organisation', async () => {
     await insertTestUsers();
 
-    const res = await request(app.getHttpServer()).get(
-      '/msisdn/organisation/zaragoza',
-    );
+    const res = await request(app.getHttpServer())
+      .get('/msisdn/organisation')
+      .send({ organisation: 'zaragoza' });
     expect(res.body).toHaveProperty('result');
     expect(res.body.result.length).toBe(2);
     expect(res.body.result).toMatchObject(testUser);
