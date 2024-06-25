@@ -5,6 +5,7 @@ import MsisdnServiceException from '../repositories/msisdn/exception/msisdn-serv
 import ServiceConflictException from './exception/service-conflict.exception';
 import { AllocateMsisdnDto } from './dto/allocate-msisdn.dto';
 import { DeAllocateMsisdnDto } from './dto/de-allocate-msisdn.dto';
+import { GetOrganisationMsisdnDto } from './dto/get-organisation-msisdn.dto';
 
 @Injectable()
 export class WebserverService {
@@ -25,11 +26,12 @@ export class WebserverService {
   }
 
   async getOrganisationMsisdns(
-    organisationId: string,
+    model: GetOrganisationMsisdnDto,
   ): Promise<SuccessResponse> {
     try {
-      const result =
-        await this.msisdnService.getOrganisationMsisdns(organisationId);
+      const result = await this.msisdnService.getOrganisationMsisdns(
+        model.organisation,
+      );
       return new SuccessResponse(result);
     } catch (error) {
       if (error instanceof MsisdnServiceException) {

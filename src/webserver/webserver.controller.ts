@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  Param,
   Post,
   UseFilters,
 } from '@nestjs/common';
@@ -12,6 +11,7 @@ import { WebserverService } from './webserver.service';
 import { HttpExceptionFilter } from './http-exception.filter';
 import { AllocateMsisdnDto } from './dto/allocate-msisdn.dto';
 import { DeAllocateMsisdnDto } from './dto/de-allocate-msisdn.dto';
+import { GetOrganisationMsisdnDto } from './dto/get-organisation-msisdn.dto';
 import { SuccessResponse } from './success-response';
 
 @Controller()
@@ -24,11 +24,11 @@ export class WebserverController {
     return await this.webService.getAllAvailableMsisdns();
   }
 
-  @Get('msisdn/organisation/:organisationId')
+  @Get('msisdn/organisation')
   async getOrganisationMsisdns(
-    @Param('organisationId') organisationId: string,
+    @Body() body: GetOrganisationMsisdnDto,
   ): Promise<SuccessResponse> {
-    return await this.webService.getOrganisationMsisdns(organisationId);
+    return await this.webService.getOrganisationMsisdns(body);
   }
 
   @Delete('msisdn')

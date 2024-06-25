@@ -1,12 +1,12 @@
 openapi: 3.0.3
 info:
-  title: Title
-  description: Title
+  title: Msisdn API
+  description: This API allows the user to allocate and deallocate numbers of an organisation.
   version: 1.0.0
 servers:
   - url: 'http'
 paths:
-  /msisdn:
+  /msisdn/available:
     get:
       description: Get a list of available msisdns
       responses:
@@ -17,24 +17,145 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: integer
-                    description: The user ID.
-                  username:
-                    type: string
-                    description: The user name.
+                  result:
+                    type: array
+                    items:
+                      type: string
+                  error:
+                    type: boolean
+                    nullable: false
+                    default: false
+                    description: error value will always be 'false' in case of a 200 'OK' status
+                  statusCode:
+                    type: number
+                    description: statusCode matches the http response code
+  /msisdn/organisation:
+    get:
+      description: Get all Users belonging a given organisation
+      requestBody:
+        required: true
+        description: body contains the organisation
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organisation:
+                  type: string
+      responses:
+        200:
+          description: all Users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+                  error:
+                    type: boolean
+                    nullable: false
+                    default: false
+                    description: error value will always be 'false' in case of a 200 'OK' status
+                  statusCode:
+                    type: number
+                    description: statusCode matches the http response code
+  /msisdn:
+    post:
+      description: Allocate a msisdn to a User
+      requestBody:
+        required: true
+        description: body contains user details, organisation and msisdn to allocate
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        200:
+          description: user was allocated the msisdn
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DefaultSuccessResponse"
+        409:
+          description: use could not be allocated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictErrorResponse"
+    delete:
+      description: Delete User details and make msisdn available
+      requestBody:
+        required: true
+        description: body contains the personId of the User
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organisation:
+                  type: string
+      responses:
+        200:
+          description: User was deleted. Msisdn was made available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DefaultSuccessResponse"
+
 components:
   schemas:
+    DefaultSuccessResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          nullable: false
+          default: false
+        statusCode:
+          type: number
+          description: statusCode matches the http response code
+    ConflictErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          nullable: false
+          default: true
+          description: error value will always be 'true' in case of a 4xx response
+        statusCode:
+          type: number
+          default: 409
+        errorCode:
+          type: string
+          enum:
+            - MSISDN_IN_USE_BY_OTHER_USER
+            - MSISDN_NOT_FOUND
+            - USER_ALREADY_HAS_DIFFERENT_MSISDN
     User:
       type: object
       properties:
-        id:
-          type: integer
-          example: 4
+        personId:
+          type: string
+          example: Z1234Q
         name:
           type: string
-          example: Arthur Dent
+          example: John
+        surname:
+          type: string
+          example: Doe
+        organisation:
+          type: string
+          example: Sales Department
+        msisdn:
+          type: string
+          example: 346123456
       # Both properties are required
       required:
-        - id
+        - personId
         - name
+        - surname
+        - organisation
+        - msisdn
